@@ -4,10 +4,13 @@ const path = require('path');
 require('dotenv').config();
 const FormData = require('form-data');
 
+const userData = require('../data/userData.json');
+
 module.exports.uploadImage = async (req, res) => {
 
     const gid = req.body.group_id;
-    const uid = req.body.user_id;
+    //const uid = req.body.user_id;
+    const uid = userData.user.user_id;
     var name = "";
     var extension = "";
     var size = 0;
@@ -20,8 +23,8 @@ module.exports.uploadImage = async (req, res) => {
         }
 
         name = path.basename(file.originalname, path.extname(file.originalname));;
-        extension = file.size;
-        size = path.extname(file.originalname);
+        extension = path.extname(file.originalname).slice(1);
+        size = file.size;
     
         const targetUrl = `https://${process.env.API_BASE_URL}/users/upload`;
     
