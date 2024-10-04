@@ -4,6 +4,7 @@ const axios = require('axios');
 require('dotenv').config();
 
 const rootDir = path.join(__dirname, '../root');
+const storageDir = path.join(__dirname, '../storage');
 const folderNames = ['folder1', 'folder2', 'folder3'];
 
 function ensureFoldersExist(folderNames, rootDir) {
@@ -35,7 +36,13 @@ module.exports.initRoot = async (uid) => {
     }
 
     axios.post(`https://${process.env.API_BASE_URL}/users/getGroups`, body).then(response => {
-        // Ensure the root directory exists before checking for folders
+        // Ensure the root and storage directories exist before checking for folders
+        fs.mkdir(storageDir, { recursive: true }, (err) => {
+            if (err) {
+                console.error('Error creating root directory:', err);
+            }
+        });
+
         fs.mkdir(rootDir, { recursive: true }, (err) => {
             if (err) {
                 console.error('Error creating root directory:', err);
