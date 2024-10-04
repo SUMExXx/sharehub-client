@@ -4,6 +4,8 @@ const rateLimit = require('express-rate-limit');
 const userRoutes = require('./routes/userRoutes');
 const { initRoot } = require('./utils/initialization');
 
+const userData = require('./data/userData.json');
+
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 1000 // limit each IP to 100 requests per windowMs
@@ -41,7 +43,7 @@ const port = process.env.PORT || 8080;
 
 app.use('/users', userRoutes);
 
-initRoot('djbvdjvbd');
+initRoot(userData.user.user_id);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

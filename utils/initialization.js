@@ -32,7 +32,7 @@ function ensureFoldersExist(folderNames, rootDir) {
 module.exports.initRoot = async (uid) => {
 
     const body = {
-        user_id: "b9336fa6-bdd2-453b-8682-6745da8ef7ac"
+        user_id: uid
     }
 
     axios.post(`https://${process.env.API_BASE_URL}/users/getGroups`, body).then(response => {
