@@ -91,7 +91,7 @@ module.exports.getGroupImages = async (req, res) => {
                 var imagesData = response.data.thumbnails;
 
                 imagesData.forEach((element, index) => {
-                    console.log(path.join(__dirname, `../root/${gid}`, `${element.name}.${element.extension}`))
+                    
                     if(fs.existsSync(path.join(__dirname, `../root/${gid}`, `${element.name}.${element.extension}`))){
                         imagesData[index].saved = true;
                     }else{
@@ -193,20 +193,21 @@ module.exports.getImage = async (req, res) => {
         await axios.post(targetUrl, data, {
             responseType: 'arraybuffer', // Important to specify that we expect binary data
         }).then( async (response) => {
-
+            
             if(response.status == 200){
-
-                const responseData = response.data.imageData; // This will be the binary image data
-                const jsonResponse = response.headers['content-type'].includes('application/json') ? JSON.parse(responseData) : null;
-
+                
+                const responseData = response.data; // This will be the binary image data
+                
+                const jsonResponse = response.headers['content-type'].includes('application/json') ? JSON.parse(responseData).imageData : null;
+                
                 // Extract the image data (assuming it’s in base64 format)
-                const imageBase64 = jsonResponse.image;
+                const imageBase64 = jsonResponse.image.replace(/^data:image\/\w+;base64,/, '');
 
                 if(jsonResponse == null){
                     return res.status(500).send('No JSON data received');
                 }
-
-                if(jsonResponse.id == imageDetails.id && jsonResponse.name == imageDetails.name && jsonResponse.size == imageDetails.size && jsonResponse.owner == imageDetails.owner && jsonResponse.extension == imageDetails.extension){
+                
+                if(jsonResponse.name == imageDetails.name && jsonResponse.size == imageDetails.size && jsonResponse.extension == imageDetails.extension){
                     if(fs.existsSync(path.join(__dirname, `../root/${gid}`, `${jsonResponse.name}.${jsonResponse.extension}`))){
                         return res.status(400).send('Image already exists')
                     }else{
@@ -226,6 +227,7 @@ module.exports.getImage = async (req, res) => {
                             await axios.post(ackowledgementUrl, data).then( async (response) => {
                                 if(response.status == 200){
                                     console.log(`Saved new image ${jsonResponse.name}.${jsonResponse.extension}`);
+                                    return res.status(200).send('Image received successfully');
                                 } else{
                                     fs.unlinkSync(path.join(__dirname, `../root/${gid}`, `${jsonResponse.name}.${jsonResponse.extension}`));
                                     return res.status(500).send('Ackowledgement failed');
