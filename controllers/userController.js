@@ -1,6 +1,7 @@
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
+const sharp = require('sharp');
 require('dotenv').config();
 const FormData = require('form-data');
 
@@ -27,9 +28,16 @@ module.exports.uploadImage = async (req, res) => {
         size = file.size;
     
         const targetUrl = `${process.env.API_BASE_URL}/users/upload`;
+
+        const thumbnailBuffer = await sharp(file.path).resize({width: 50}).toBuffer(); // Resize to thumbnail size
     
         const formData = new FormData();
-        formData.append('image', fs.createReadStream(file.path), file.originalname);
+        // formData.append('image', fs.createReadStream(file.path), file.originalname);
+        formData.append('image', thumbnailBuffer, {
+            filename: `${file.originalname}`,
+            contentType: file.mimetype,
+            knownLength: thumbnailBuffer.length,
+        });
         formData.append('name', name); 
         formData.append('extension', extension);
         formData.append('size', size); 
@@ -161,7 +169,7 @@ module.exports.getImage = async (req, res) => {
         await axios.post(imageDetailsURL, imageDetailsData).then( async (response) => {
             if(response.status == 200){
 
-                imageDetails = response.data;
+                imageDetails = response.data.imageDetails;
             
             }else{
                 res.status(400).send('Image details not valid');
@@ -177,6 +185,7 @@ module.exports.getImage = async (req, res) => {
         const targetUrl = `${process.env.API_BASE_URL}/users/getImage`;
     
         const data = {
+            'user_id': uid,
             'group_id': gid,
             'image_id': imgId
         }
@@ -187,7 +196,7 @@ module.exports.getImage = async (req, res) => {
 
             if(response.status == 200){
 
-                const responseData = response.data; // This will be the binary image data
+                const responseData = response.data.imageData; // This will be the binary image data
                 const jsonResponse = response.headers['content-type'].includes('application/json') ? JSON.parse(responseData) : null;
 
                 // Extract the image data (assuming it’s in base64 format)
