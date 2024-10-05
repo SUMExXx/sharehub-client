@@ -35,7 +35,7 @@ module.exports.initRoot = async (uid) => {
         user_id: uid
     }
 
-    axios.post(`https://${process.env.API_BASE_URL}/users/getGroups`, body).then(response => {
+    axios.post(`${process.env.API_BASE_URL}/users/getGroups`, body).then(response => {
         // Ensure the root and storage directories exist before checking for folders
         fs.mkdir(storageDir, { recursive: true }, (err) => {
             if (err) {
